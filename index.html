@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>QA Practice Lab</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky top bar, one centered column, each practice page is a self-contained "level". */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --fg:#1a2330; --muted:#586374; --line:#d9dee6;
+  --accent:#0a6b73; --accent-fg:#ffffff; --accent-soft:#e1f1f2;
+  --danger:#b3261e; --ok:#13783f; --warn:#8f5200; --bug:#6d3bbd;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171d; --surface:#1a2129; --fg:#e7ebf0; --muted:#9ba6b5; --line:#2d3743;
+  --accent:#58c2c9; --accent-fg:#07242a; --accent-soft:#17323a;
+  --danger:#ff8f86; --ok:#62d391; --warn:#f0b65c; --bug:#b99af0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171d; --surface:#1a2129; --fg:#e7ebf0; --muted:#9ba6b5; --line:#2d3743;
+  --accent:#58c2c9; --accent-fg:#07242a; --accent-soft:#17323a;
+  --danger:#ff8f86; --ok:#62d391; --warn:#f0b65c; --bug:#b99af0; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:1040px;margin:0 auto}
+a{color:var(--accent)}
+h1{font-size:1.75rem;line-height:1.2;margin:0 0 6px;text-wrap:balance}
+h2{font-size:1.1rem;margin:0 0 10px}
+h3{font-size:.95rem;margin:0 0 6px}
+p{margin:0 0 10px}
+code,.mono{font-family:var(--font-mono);font-size:.88em}
+code{background:var(--accent-soft);padding:1px 5px;border-radius:3px}
+.lead{color:var(--muted);max-width:68ch;margin-bottom:20px}
+.muted{color:var(--muted)}
+
+/* top bar */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--surface);z-index:30}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);
+  margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px))}
+.top-in{max-width:1040px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;padding-block:10px}
+.brand{font-weight:600;letter-spacing:.01em;text-decoration:none;color:var(--fg);display:flex;align-items:center;gap:8px}
+.brand i{display:inline-block;width:12px;height:12px;border-radius:2px;background:var(--accent)}
+nav{display:flex;flex-wrap:wrap;gap:2px;flex:1;min-width:0}
+nav a{padding:6px 10px;border-radius:5px;text-decoration:none;color:var(--muted);font-weight:500}
+nav a:hover{background:var(--accent-soft);color:var(--fg)}
+nav a[aria-current="page"]{background:var(--accent-soft);color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+.badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:var(--accent);color:var(--accent-fg);font-size:.78rem;text-align:center;margin-left:4px}
+.tools{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.switch{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--muted);font-weight:500;user-select:none}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.switch .track{width:36px;height:20px;border-radius:10px;background:var(--line);position:relative;transition:background .15s}
+.switch .track::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--surface);box-shadow:0 0 0 1px var(--muted);transition:transform .15s}
+.switch input:checked + .track{background:var(--bug)}
+.switch input:checked + .track::after{transform:translateX(16px)}
+.switch input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+.userchip{font-family:var(--font-mono);font-size:.85rem;color:var(--muted)}
+
+main{padding-top:28px;min-height:60vh}
+
+/* controls */
+label{display:block;font-weight:500;margin:12px 0 4px}
+label.check,label.radio{display:flex;align-items:center;gap:8px;font-weight:400;margin:6px 0}
+input[type=text],input[type=password],input[type=email],input[type=number],input[type=date],input[type=search],input[type=file],select,textarea{
+  width:100%;font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--muted);border-radius:6px;padding:8px 10px}
+input[type=file]{padding:6px}
+textarea{min-height:84px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[aria-invalid="true"],select[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:var(--danger);box-shadow:0 0 0 1px var(--danger)}
+input[type=checkbox],input[type=radio]{width:16px;height:16px;accent-color:var(--accent)}
+.btn{font:inherit;font-weight:500;border:1px solid var(--muted);background:var(--surface);color:var(--fg);padding:8px 14px;border-radius:6px;cursor:pointer}
+.btn:hover:not(:disabled){background:var(--accent-soft)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08);background:var(--accent)}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn.small{padding:4px 10px;font-size:.9rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.msg{margin:10px 0 0;padding:9px 12px;border-radius:6px;border:1px solid;font-weight:500}
+.msg.error{color:var(--danger);border-color:var(--danger)}
+.msg.ok{color:var(--ok);border-color:var(--ok)}
+.fielderr{color:var(--danger);font-size:.88rem;margin:4px 0 0;min-height:0}
+.fielderr:empty{display:none}
+.hint{color:var(--muted);font-size:.88rem}
+
+/* panels */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px;min-width:0}
+.panel + .panel{margin-top:16px}
+.split{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:16px;align-items:start}
+.split .panel + .panel{margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.grid2 .panel + .panel{margin-top:0}
+.card{display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:16px}
+.card:hover{border-color:var(--accent)}
+.card h3{color:var(--accent);margin:0}
+.card .tag{font-family:var(--font-mono);font-size:.8rem;color:var(--muted)}
+.creds{width:100%;border-collapse:collapse;font-size:.9rem}
+.creds td,.creds th{padding:5px 0;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.creds td:last-child{font-family:var(--font-mono);font-size:.85rem}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table.data{width:100%;border-collapse:collapse;min-width:520px}
+table.data th,table.data td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+table.data th{font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--bg)}
+table.data th button{font:inherit;color:inherit;text-transform:inherit;letter-spacing:inherit;background:none;border:0;cursor:pointer;padding:0;display:inline-flex;gap:6px}
+table.data th[aria-sort="ascending"] button::after{content:"\25B2";font-size:.7em}
+table.data th[aria-sort="descending"] button::after{content:"\25BC";font-size:.7em}
+table.data td.num,table.data th.num{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:1px 9px;border-radius:10px;font-size:.82rem;font-weight:500;border:1px solid}
+.pill.Active{color:var(--ok);border-color:var(--ok)}
+.pill.Inactive{color:var(--muted);border-color:var(--muted)}
+.pill.On{color:var(--warn);border-color:var(--warn)}
+.pager{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+
+/* shop */
+.tile{height:92px;border-radius:6px;background:var(--accent-soft);display:grid;place-items:center;color:var(--accent);font-family:var(--font-mono);font-weight:500}
+.price{font-variant-numeric:tabular-nums;font-weight:600}
+.sum{display:grid;grid-template-columns:1fr auto;gap:6px 24px;margin:0}
+.sum dt{color:var(--muted)} .sum dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.sum .total{font-weight:600;font-size:1.1rem;color:var(--fg);border-top:1px solid var(--line);padding-top:8px}
+.qty{width:72px !important}
+
+/* dynamic */
+.spinner{width:22px;height:22px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation-duration:2.4s}}
+.chip{display:inline-block;padding:6px 12px;border:1px dashed var(--muted);border-radius:6px;background:var(--surface);cursor:grab;margin:0 6px 6px 0;user-select:none}
+.dropzone{min-height:70px;border:2px dashed var(--accent);border-radius:8px;padding:10px;background:var(--accent-soft)}
+.dropzone.over{background:var(--surface)}
+.hovermenu{position:relative;display:inline-block}
+.hovermenu ul{display:none;position:absolute;left:0;top:100%;margin:4px 0 0;padding:6px;list-style:none;min-width:170px;background:var(--surface);border:1px solid var(--line);border-radius:6px;z-index:5;box-shadow:0 4px 14px rgb(0 0 0 / .15)}
+.hovermenu:hover ul,.hovermenu:focus-within ul{display:block}
+.hovermenu li a{display:block;padding:6px 10px;border-radius:4px;text-decoration:none;color:var(--fg)}
+.hovermenu li a:hover{background:var(--accent-soft)}
+.items{list-style:none;margin:0;padding:0}
+.items li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.overlay{position:fixed;inset:0;background:rgb(10 14 20 / .55);display:grid;place-items:center;z-index:40;padding:16px}
+.overlay[hidden]{display:none}
+.dialog{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:22px;max-width:380px;width:100%}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:8px;z-index:50;font-weight:500;max-width:calc(100vw - 32px)}
+
+/* registration + calendar */
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+@media (max-width:520px){.two{grid-template-columns:minmax(0,1fr)}}
+.dpwrap{position:relative}
+.dprow{display:flex;gap:8px;align-items:stretch}
+.dprow input{flex:1 1 auto;min-width:0;width:auto}
+.dprow .btn{flex:0 0 auto}
+input[readonly]{cursor:pointer}
+.calendar{position:absolute;left:0;top:calc(100% + 4px);z-index:15;width:min(100%,320px);background:var(--surface);border:1px solid var(--muted);border-radius:8px;padding:12px;box-shadow:0 8px 24px rgb(0 0 0 / .25)}
+.calendar[hidden]{display:none}
+.cal-head{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.cal-head select{flex:1 1 0;min-width:0;padding:5px 6px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal-dow{font-size:.75rem;color:var(--muted);padding:4px 0}
+.cal-day{font:inherit;font-variant-numeric:tabular-nums;border:0;background:none;color:var(--fg);padding:7px 0;border-radius:5px;cursor:pointer}
+.cal-day:hover:not(:disabled){background:var(--accent-soft)}
+.cal-day.sel{background:var(--accent);color:var(--accent-fg)}
+.cal-day:disabled{color:var(--muted);opacity:.4;cursor:not-allowed}
+.cal-foot{display:flex;justify-content:flex-end;margin-top:8px}
+
+/* trainer */
+.bugs{display:grid;gap:12px}
+.bug{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:14px 16px}
+.bug header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:6px}
+.bug .id{font-family:var(--font-mono);font-weight:500;color:var(--bug)}
+.bug .where{font-family:var(--font-mono);font-size:.8rem;border:1px solid var(--line);padding:0 7px;border-radius:10px;color:var(--muted)}
+.bug dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:3px 14px}
+.bug dt{color:var(--muted)} .bug dd{margin:0}
+footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem}
+@media (max-width:760px){.split{grid-template-columns:minmax(0,1fr)} .bug dl{grid-template-columns:1fr}}
+</style>
+
+<div class="top"><div class="top-in">
+  <a class="brand" href="#home" data-testid="brand"><i></i>QA Practice Lab</a>
+  <nav aria-label="Main">
+    <a href="#login" data-testid="nav-login">Login</a>
+    <a href="#register" data-testid="nav-register">Register</a>
+    <a href="#forms" data-testid="nav-forms">Forms</a>
+    <a href="#table" data-testid="nav-table">Table</a>
+    <a href="#dynamic" data-testid="nav-dynamic">Dynamic</a>
+    <a href="#shop" data-testid="nav-shop">Shop</a>
+    <a href="#cart" data-testid="nav-cart" id="nav-cart">Cart<span class="badge" id="cart-count" data-testid="cart-count">0</span></a>
+  </nav>
+  <div class="tools">
+    <span class="userchip" id="user-chip" data-testid="user-chip" hidden></span>
+    <label class="switch" for="bug-mode" style="margin:0"><input type="checkbox" id="bug-mode" data-testid="bug-mode"><span class="track"></span>Bug mode</label>
+    <button class="btn small" id="reset-data" data-testid="reset-data" type="button">Reset data</button>
+  </div>
+</div></div>
+
+<div class="wrap">
+  <main id="main" tabindex="-1"></main>
+  <footer>Practice site for test automation training. Nothing here is real: no data leaves your browser. <a href="#trainer" data-testid="nav-trainer">Trainer notes</a></footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" data-testid="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var money=function(n){return '$'+n.toFixed(2)};
+
+/* ---------- state (kept in localStorage when allowed, so a page reload keeps the session) ---------- */
+function fresh(){return {bug:false,user:null,fails:0,lockUntil:0,cart:{},coupons:0,orders:1000,accounts:{}}}
+var S=fresh();
+try{var raw=localStorage.getItem('qalab-v1'); if(raw){S=Object.assign(fresh(),JSON.parse(raw))}}catch(e){}
+function save(){try{localStorage.setItem('qalab-v1',JSON.stringify(S))}catch(e){}}
+var B=function(){return S.bug};
+
+var main=$('#main');
+var toastTimer=null;
+function toast(m){var t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.hidden=true},3000)}
+
+/* ---------- data ---------- */
+var PRODUCTS=[
+ {id:'aviator',name:'Aviator Classic',price:99,tag:'AV'},
+ {id:'round',name:'Round Metal',price:79,tag:'RM'},
+ {id:'square',name:'Square Acetate',price:59.5,tag:'SQ'},
+ {id:'sport',name:'Sport Wrap',price:120,tag:'SW'},
+ {id:'reader',name:'Reading Glasses',price:25,tag:'RG'},
+ {id:'cloth',name:'Lens Cleaning Kit',price:49,tag:'LK'}
+];
+var PW='Password123';
+
+var BUGS=[
+ {id:'B01',page:'login',title:'Password is not case sensitive',steps:'Log in as standard_user with the password "password123" (all lowercase).',exp:'Error: Invalid username or password.',act:'Login succeeds.'},
+ {id:'B02',page:'login',title:'Wrong message for empty password',steps:'Enter a username, leave the password blank, press Log in.',exp:'"Password is required"',act:'"Username is required"'},
+ {id:'B03',page:'forms',title:'Email validation too weak',steps:'Submit the form with the email "kevin@test" (no dot in the domain).',exp:'Error: Enter a valid email address.',act:'Email is accepted.'},
+ {id:'B04',page:'forms',title:'Age lower limit is not checked',steps:'Enter an age of 5, 0 or -3 and submit.',exp:'Error: Age must be between 18 and 99.',act:'Age is accepted.'},
+ {id:'B05',page:'forms',title:'Only the first interest is saved',steps:'Tick two or more interests and submit with valid data.',exp:'The summary lists every ticked interest.',act:'Only the first one is listed.'},
+ {id:'B06',page:'table',title:'Salary sorts as text',steps:'Click the Salary header to sort ascending.',exp:'900, 1,000 ... 9,400 in numeric order.',act:'Text order: 1,000 and 1,100 come before 900.'},
+ {id:'B07',page:'table',title:'Search is case sensitive',steps:'Type "ana" and then "Ana" in the search box.',exp:'Both return the same rows.',act:'Lowercase "ana" returns nothing.'},
+ {id:'B08',page:'table',title:'Next button works on the last page',steps:'Go to the last page and press Next.',exp:'Next is disabled on the last page.',act:'Next stays enabled and shows an empty page.'},
+ {id:'B09',page:'dynamic',title:'Cancel also deletes the item',steps:'Press Delete on an item, then press Cancel in the dialog.',exp:'The item stays in the list.',act:'The item is removed.'},
+ {id:'B10',page:'dynamic',title:'Upload shows wrong file size unit',steps:'Upload any file larger than 1 KB.',exp:'Size shown in KB (for example 12.4 KB).',act:'Same number shown as MB.'},
+ {id:'B11',page:'cart',title:'Totals do not refresh after changing quantity',steps:'Add an item, change its quantity to 3 on the Cart page.',exp:'Subtotal, tax and total update straight away.',act:'Summary stays old until the page is reloaded.'},
+ {id:'B12',page:'cart',title:'Coupon can be stacked',steps:'Apply SAVE10 two or three times.',exp:'Second try shows "Coupon already applied".',act:'Discount grows by 10% each time.'},
+ {id:'B13',page:'cart',title:'Free shipping threshold is off by one cent',steps:'Build a cart with a subtotal of exactly $100.00 (4 x Reading Glasses).',exp:'Shipping is $0.00 (free from $100).',act:'Shipping is $8.00.'},
+ {id:'B14',page:'cart',title:'Checkout allowed with an empty cart',steps:'Empty the cart and open #checkout directly.',exp:'Redirect back to the cart.',act:'The checkout form opens and an order can be placed.'},
+ {id:'B15',page:'register',title:'Password mismatch is accepted',steps:'Enter different values in Password and Confirm password, fill everything else correctly, and create the account.',exp:'Error: Passwords do not match.',act:'The account is created.'},
+ {id:'B16',page:'register',title:'Calendar saves the day before',steps:'Open the calendar and click the 15th of any month.',exp:'The Date of birth field shows the 15th.',act:'The field shows the 14th.'},
+ {id:'B17',page:'register',title:'Duplicate email check is case sensitive',steps:'Register kev@test.com. Then register again with KEV@test.com.',exp:'Error: An account with this email already exists.',act:'A second account is created.'}
+];
+
+/* ---------- router ---------- */
+var views={home:vHome,login:vLogin,register:vRegister,forms:vForms,table:vTable,dynamic:vDynamic,shop:vShop,cart:vCart,checkout:vCheckout,trainer:vTrainer};
+function route(){
+  var name=(location.hash||'#home').slice(1);
+  if(!views[name])name='home';
+  views[name]();
+  $$('nav a').forEach(function(a){
+    if(a.getAttribute('href')==='#'+name)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+  });
+  if(name==='checkout')$('#nav-cart').setAttribute('aria-current','page');
+  window.scrollTo(0,0);
+}
+function chrome(){
+  var n=Object.keys(S.cart).reduce(function(a,k){return a+S.cart[k]},0);
+  $('#cart-count').textContent=n;
+  var c=$('#user-chip');c.hidden=!S.user;c.textContent=S.user?('signed in: '+S.user):'';
+  $('#bug-mode').checked=S.bug;
+}
+window.addEventListener('hashchange',route);
+$('#bug-mode').addEventListener('change',function(e){S.bug=e.target.checked;save();toast(S.bug?'Bug mode on':'Bug mode off');route()});
+$('#reset-data').addEventListener('click',function(){var b=S.bug;S=fresh();S.bug=b;save();chrome();route();toast('Data reset')});
+
+/* ---------- home ---------- */
+function vHome(){
+  main.innerHTML='<h1>QA Practice Lab</h1>'+
+  '<p class="lead">A small website built to be tested. Use it to practice manual test cases first, then automate the same steps with Selenium, Playwright, Cypress or any tool you are learning.</p>'+
+  '<div class="grid">'+
+   card('login','Login','Valid and invalid sign-in, error messages, lockout after 3 failed tries, session kept on reload.')+
+   card('register','Register','Shop-style sign-up with password rules, duplicate email check and a calendar date picker that covers other fields.')+
+   card('forms','Forms','Text, email, number, dropdown, radio, checkbox, date, text area, validation errors and a result summary.')+
+   card('table','Table','Search, filter, sort, page size and pagination on 35 rows.')+
+   card('dynamic','Dynamic','Spinners, delayed buttons, pop-up dialog, toast, drag and drop, file upload, hover menu, changing IDs.')+
+   card('shop','Shop and checkout','Add to cart, change quantity, coupon, shipping and tax maths, checkout, order confirmation.')+
+  '</div>'+
+  '<div class="grid2" style="margin-top:16px">'+
+   '<section class="panel"><h2>How the practice works</h2><p>Every important element has a stable <code>id</code> and a <code>data-testid</code> so you can compare locators. A few elements have none on purpose, so you can practice other locator types.</p><p class="hint">Quick tip: <code>Reset data</code> in the top bar clears your login, cart and counters.</p></section>'+
+   '<section class="panel"><h2>Bug mode</h2><p>Switch <b>Bug mode</b> off to get a working site for learning automation. Switch it on to hide a set of defects for trainees to find by testing. The trainer notes list them all.</p></section>'+
+  '</div>';
+}
+function card(r,t,d){return '<a class="card" href="#'+r+'" data-testid="card-'+r+'"><h3>'+t+'</h3><span>'+d+'</span><span class="tag">#'+r+'</span></a>'}
+
+/* ---------- login ---------- */
+function vLogin(){
+  var inner;
+  if(S.user){
+    inner='<h2>Welcome</h2><p id="welcome-msg" data-testid="welcome-msg">You are signed in as <b>'+esc(S.user)+'</b>.</p><button class="btn" id="logout-btn" data-testid="logout-btn" type="button">Log out</button>';
+  }else{
+    inner='<h2>Sign in</h2><form id="login-form" novalidate>'+
+     '<label for="username">Username or email</label><input type="text" id="username" name="username" data-testid="username" autocomplete="off">'+
+     '<label for="password">Password</label><input type="password" id="password" name="password" data-testid="password" autocomplete="off">'+
+     '<label class="check"><input type="checkbox" id="remember" data-testid="remember"> Remember me</label>'+
+     '<p class="msg error" id="login-error" data-testid="login-error" role="alert" hidden></p>'+
+     '<div class="row" style="margin-top:14px"><button class="btn primary" id="login-submit" data-testid="login-submit" type="submit">Log in</button></div></form>';
+  }
+  main.innerHTML='<h1>Login</h1><p class="lead">Practice positive and negative login tests. The form has three attempts, then locks for 15 seconds.</p>'+
+   '<div class="split"><section class="panel">'+inner+'</section>'+
+   '<aside class="panel"><h2>Test accounts</h2><table class="creds"><tr><th>Username</th><th>Password</th></tr>'+
+   '<tr><td>standard_user</td><td>Password123</td></tr><tr><td>locked_user</td><td>Password123</td></tr></table>'+
+   '<p class="hint" style="margin-top:10px"><code>locked_user</code> has the right password but the account is locked.</p><p class="hint">Registered your own account? Log in with its email and password. New here? <a href="#register" id="login-to-register">Create an account</a>.</p></aside></div>';
+  var lo=$('#logout-btn');
+  if(lo)lo.onclick=function(){S.user=null;save();chrome();vLogin();toast('Logged out')};
+  var f=$('#login-form'); if(!f)return;
+  f.onsubmit=function(e){
+    e.preventDefault();
+    var u=$('#username').value.trim(),p=$('#password').value,err=$('#login-error');
+    var show=function(m){err.textContent=m;err.hidden=false};
+    var left=S.lockUntil-Date.now();
+    if(left>0){show('Too many failed attempts. Try again in '+Math.ceil(left/1000)+' seconds.');return}
+    if(!u){show('Username is required');return}
+    if(!p){show(B()?'Username is required':'Password is required');return}
+    var acct=S.accounts[u]||S.accounts[u.toLowerCase()];
+    var known=(u==='standard_user'||u==='locked_user'||!!acct);
+    var expected=acct?acct.pw:PW;
+    var pwOk=B()?p.toLowerCase()===expected.toLowerCase():p===expected;
+    if(known&&pwOk){
+      if(u==='locked_user'){show('Sorry, this account has been locked.');return}
+      S.user=u;S.fails=0;save();chrome();vLogin();toast('Login successful');return;
+    }
+    S.fails++;
+    if(S.fails>=3){S.fails=0;S.lockUntil=Date.now()+15000;save();show('Too many failed attempts. Try again in 15 seconds.')}
+    else{save();show('Invalid username or password. Attempt '+S.fails+' of 3.')}
+  };
+}
+
+/* ---------- registration ---------- */
+var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function pad(n){return (n<10?'0':'')+n}
+function vRegister(){
+  var now=new Date(),cal={y:2000,m:0},chosen='';
+  main.innerHTML='<h1>Create an account</h1><p class="lead">A typical online shop sign-up. Fill in every required field, including the date of birth, then create the account. You can log in with it afterwards.</p>'+
+  '<div class="split"><section class="panel" id="register-panel"><h2>Your details</h2><form id="register-form" novalidate>'+
+   '<div class="two"><div>'+fld('first-name','First name','<input type="text" id="first-name" data-testid="first-name" autocomplete="off">','first-name')+'</div><div>'+fld('last-name','Last name','<input type="text" id="last-name" data-testid="last-name" autocomplete="off">','last-name')+'</div></div>'+
+   fld('reg-email','Email address','<input type="email" id="reg-email" data-testid="reg-email" autocomplete="off">','reg-email')+
+   '<label for="birthdate">Date of birth</label><div class="dpwrap"><div class="dprow"><input type="text" id="birthdate" data-testid="birthdate" placeholder="YYYY-MM-DD" readonly autocomplete="off"><button type="button" class="btn" id="open-calendar" data-testid="open-calendar" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar">Pick a date</button></div><div class="calendar" id="calendar" data-testid="calendar" role="dialog" aria-label="Choose your date of birth" hidden></div></div><p class="fielderr" id="err-birthdate" data-testid="err-birthdate" role="alert"></p>'+
+   '<label for="reg-password">Password</label><div class="dprow"><input type="password" id="reg-password" data-testid="reg-password" autocomplete="new-password"><button type="button" class="btn" id="toggle-password" data-testid="toggle-password" aria-pressed="false">Show</button></div><p class="hint" id="password-strength" data-testid="password-strength" style="margin:4px 0 0">At least 8 characters, one capital letter and one number.</p><p class="fielderr" id="err-reg-password" data-testid="err-reg-password" role="alert"></p>'+
+   fld('reg-confirm','Confirm password','<input type="password" id="reg-confirm" data-testid="reg-confirm" autocomplete="new-password">','reg-confirm')+
+   fld('reg-phone','Mobile number','<input type="text" id="reg-phone" data-testid="reg-phone" inputmode="tel" placeholder="+63 917 123 4567">','reg-phone')+
+   '<label class="check" style="margin-top:14px"><input type="checkbox" id="reg-news" data-testid="reg-news"> Send me news and offers (optional)</label>'+
+   '<label class="check"><input type="checkbox" id="reg-terms" data-testid="reg-terms"> I agree to the terms and privacy policy</label><p class="fielderr" id="err-reg-terms" data-testid="err-reg-terms" role="alert"></p>'+
+   '<div class="row" style="margin-top:16px"><button class="btn primary" id="create-account" data-testid="create-account" type="submit">Create account</button></div></form></section>'+
+   '<aside class="panel"><h2>Good to know</h2><p>Already registered? <a href="#login" id="to-login">Log in</a>.</p><p class="hint">You must be at least 18 years old. Each email address can be used for one account only.</p></aside></div>';
+
+  var cEl=$('#calendar'),inp=$('#birthdate'),btn=$('#open-calendar');
+  function fmt(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d)}
+  function paint(){
+    var first=new Date(cal.y,cal.m,1).getDay(),dim=new Date(cal.y,cal.m+1,0).getDate(),h='';
+    h+='<div class="cal-head"><button type="button" class="btn small" id="cal-prev" data-testid="cal-prev" aria-label="Previous month">&lsaquo;</button>'+
+      '<select id="cal-month" data-testid="cal-month" aria-label="Month">'+MONTHS.map(function(n,i){return '<option value="'+i+'"'+(i===cal.m?' selected':'')+'>'+n+'</option>'}).join('')+'</select>'+
+      '<select id="cal-year" data-testid="cal-year" aria-label="Year">';
+    for(var y=now.getFullYear();y>=1920;y--)h+='<option'+(y===cal.y?' selected':'')+'>'+y+'</option>';
+    h+='</select><button type="button" class="btn small" id="cal-next" data-testid="cal-next" aria-label="Next month">&rsaquo;</button></div><div class="cal-grid">';
+    ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(function(w){h+='<span class="cal-dow">'+w+'</span>'});
+    for(var i=0;i<first;i++)h+='<span></span>';
+    for(var d=1;d<=dim;d++){
+      var ds=fmt(cal.y,cal.m,d),future=new Date(cal.y,cal.m,d)>now;
+      h+='<button type="button" class="cal-day'+(ds===chosen?' sel':'')+'" data-date="'+ds+'" data-testid="day-'+d+'" aria-label="'+d+' '+MONTHS[cal.m]+' '+cal.y+'"'+(future?' disabled':'')+(ds===chosen?' aria-pressed="true"':'')+'>'+d+'</button>';
+    }
+    h+='</div><div class="cal-foot"><button type="button" class="btn small" id="cal-close" data-testid="cal-close">Close</button></div>';
+    cEl.innerHTML=h;
+  }
+  function openCal(){
+    if(inp.value){var p=inp.value.split('-');cal.y=+p[0];cal.m=+p[1]-1}
+    paint();cEl.hidden=false;btn.setAttribute('aria-expanded','true');$('#cal-month').focus();
+  }
+  function closeCal(){cEl.hidden=true;btn.setAttribute('aria-expanded','false');btn.focus()}
+  btn.onclick=function(){if(cEl.hidden)openCal();else closeCal()};
+  inp.onclick=function(){if(cEl.hidden)openCal()};
+  cEl.onclick=function(e){
+    var t=e.target;
+    if(t.closest('#cal-prev')){cal.m--;if(cal.m<0){cal.m=11;cal.y--}if(cal.y<1920){cal.y=1920;cal.m=0}paint();$('#cal-prev').focus();return}
+    if(t.closest('#cal-next')){cal.m++;if(cal.m>11){cal.m=0;cal.y++}if(cal.y>now.getFullYear()){cal.y=now.getFullYear();cal.m=now.getMonth()}paint();$('#cal-next').focus();return}
+    if(t.closest('#cal-close')){closeCal();return}
+    var d=t.closest('.cal-day');
+    if(d&&!d.disabled){
+      chosen=d.dataset.date;var v=chosen;
+      if(B()){var p=v.split('-').map(Number),q=new Date(p[0],p[1]-1,p[2]-1);v=fmt(q.getFullYear(),q.getMonth(),q.getDate())}
+      inp.value=v;$('#err-birthdate').textContent='';inp.removeAttribute('aria-invalid');closeCal();
+    }
+  };
+  cEl.onchange=function(e){
+    if(e.target.id==='cal-month'){cal.m=+e.target.value;paint();$('#cal-month').focus()}
+    else if(e.target.id==='cal-year'){cal.y=+e.target.value;paint();$('#cal-year').focus()}
+  };
+  cEl.onkeydown=function(e){if(e.key==='Escape'){e.preventDefault();closeCal()}};
+
+  $('#toggle-password').onclick=function(){var p=$('#reg-password'),show=p.type==='password';p.type=show?'text':'password';this.textContent=show?'Hide':'Show';this.setAttribute('aria-pressed',String(show))};
+  $('#reg-password').oninput=function(e){
+    var v=e.target.value,s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+    $('#password-strength').textContent=v?('Strength: '+['Very weak','Weak','Fair','Good','Strong'][s]):'At least 8 characters, one capital letter and one number.';
+  };
+  function ageOk(s){var p=s.split('-').map(Number),lim=new Date(now.getFullYear()-18,now.getMonth(),now.getDate());return new Date(p[0],p[1]-1,p[2])<=lim}
+
+  $('#register-form').onsubmit=function(e){
+    e.preventDefault();
+    var v={f:$('#first-name').value.trim(),l:$('#last-name').value.trim(),e:$('#reg-email').value.trim(),dob:inp.value,pw:$('#reg-password').value,cf:$('#reg-confirm').value,ph:$('#reg-phone').value.trim(),news:$('#reg-news').checked,terms:$('#reg-terms').checked};
+    var er={},dupKey=B()?v.e:v.e.toLowerCase();
+    if(!v.f)er['first-name']='First name is required';
+    if(!v.l)er['last-name']='Last name is required';
+    if(!v.e)er['reg-email']='Email is required';
+    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.e))er['reg-email']='Enter a valid email address';
+    else if(S.accounts[dupKey])er['reg-email']='An account with this email already exists';
+    if(!v.dob)er.birthdate='Date of birth is required';
+    else if(!ageOk(v.dob))er.birthdate='You must be at least 18 years old';
+    if(!v.pw)er['reg-password']='Password is required';
+    else if(v.pw.length<8||!/[A-Z]/.test(v.pw)||!/[0-9]/.test(v.pw))er['reg-password']='Password needs 8 or more characters, a capital letter and a number';
+    if(!v.cf)er['reg-confirm']='Confirm your password';
+    else if(!B()&&v.cf!==v.pw)er['reg-confirm']='Passwords do not match';
+    var digits=v.ph.replace(/\D/g,'');
+    if(!v.ph)er['reg-phone']='Mobile number is required';
+    else if(!/^[+\d\s()-]+$/.test(v.ph)||digits.length<7||digits.length>15)er['reg-phone']='Enter a valid mobile number';
+    if(!v.terms)er['reg-terms']='You must agree to continue';
+    ['first-name','last-name','reg-email','birthdate','reg-password','reg-confirm','reg-phone','reg-terms'].forEach(function(k){
+      $('#err-'+k).textContent=er[k]||'';
+      var el=$('#'+k);
+      if(er[k]&&k!=='reg-terms')el.setAttribute('aria-invalid','true');else el.removeAttribute('aria-invalid');
+    });
+    if(Object.keys(er).length)return;
+    S.accounts[dupKey]={first:v.f,last:v.l,pw:v.pw,phone:v.ph,news:v.news};save();
+    main.innerHTML='<h1>Account created</h1><section class="panel"><p class="msg ok" id="register-success" data-testid="register-success">Welcome, '+esc(v.f)+'. Your account for '+esc(v.e)+' is ready.</p>'+
+      '<dl class="kv" style="margin-top:14px"><dt>Name</dt><dd id="out-fullname">'+esc(v.f+' '+v.l)+'</dd><dt>Email</dt><dd id="out-regemail">'+esc(v.e)+'</dd><dt>Date of birth</dt><dd id="out-birthdate">'+esc(v.dob)+'</dd><dt>Mobile</dt><dd id="out-phone">'+esc(v.ph)+'</dd><dt>News and offers</dt><dd id="out-news">'+(v.news?'Yes':'No')+'</dd></dl>'+
+      '<p style="margin-top:16px"><a class="btn primary" href="#login" id="go-login" data-testid="go-login" style="text-decoration:none;display:inline-block">Go to login</a></p></section>';
+  };
+}
+
+/* ---------- forms ---------- */
+function vForms(){
+  var countries=['Philippines','Singapore','France','Italy','United States'];
+  var interests=['Eyewear','Lenses','Sunglasses','Hearing'];
+  main.innerHTML='<h1>Forms</h1><p class="lead">Fill in the registration form. Try valid data, empty fields and edge values, then check the summary.</p>'+
+  '<div class="grid2"><section class="panel"><h2>Registration</h2><form id="reg-form" novalidate>'+
+   fld('full-name','Full name','<input type="text" id="full-name" name="fullName" data-testid="full-name">','name')+
+   fld('email','Email','<input type="email" id="email" name="email" data-testid="email">','email')+
+   fld('age','Age (18 to 99)','<input type="number" id="age" name="age" data-testid="age">','age')+
+   fld('country','Country','<select id="country" name="country" data-testid="country"><option value="">Select a country</option>'+countries.map(function(c){return '<option value="'+c+'">'+c+'</option>'}).join('')+'</select>','country')+
+   '<fieldset style="border:0;padding:0;margin:12px 0 0"><legend style="font-weight:500;padding:0">Gender</legend>'+
+    ['Female','Male','Other'].map(function(g){return '<label class="radio"><input type="radio" name="gender" id="gender-'+g.toLowerCase()+'" value="'+g+'" data-testid="gender-'+g.toLowerCase()+'"> '+g+'</label>'}).join('')+
+    '<p class="fielderr" id="err-gender" data-testid="err-gender" role="alert"></p></fieldset>'+
+   '<fieldset style="border:0;padding:0;margin:12px 0 0"><legend style="font-weight:500;padding:0">Interests</legend>'+
+    interests.map(function(i){return '<label class="check"><input type="checkbox" name="interests" id="int-'+i.toLowerCase()+'" value="'+i+'" data-testid="int-'+i.toLowerCase()+'"> '+i+'</label>'}).join('')+'</fieldset>'+
+   fld('dob','Date of birth','<input type="date" id="dob" name="dob" data-testid="dob">','dob')+
+   '<label for="bio">Short bio</label><textarea id="bio" name="bio" maxlength="120" data-testid="bio"></textarea><p class="hint" id="bio-count" data-testid="bio-count" style="margin:4px 0 0">0 / 120</p>'+
+   '<label class="check" style="margin-top:14px"><input type="checkbox" id="terms" data-testid="terms"> I accept the terms</label><p class="fielderr" id="err-terms" data-testid="err-terms" role="alert"></p>'+
+   '<div class="row" style="margin-top:16px"><button class="btn primary" id="reg-submit" data-testid="reg-submit" type="submit">Submit</button><button class="btn" id="reg-clear" data-testid="reg-clear" type="reset">Clear</button></div>'+
+  '</form></section>'+
+  '<section class="panel" aria-live="polite"><h2>Result</h2><div id="reg-result" data-testid="reg-result"><p class="muted">Nothing submitted yet.</p></div></section></div>';
+
+  var bio=$('#bio');bio.oninput=function(){$('#bio-count').textContent=bio.value.length+' / 120'};
+  var f=$('#reg-form');
+  f.onreset=function(){setTimeout(function(){$('#bio-count').textContent='0 / 120';$$('.fielderr').forEach(function(x){x.textContent=''});$$('[aria-invalid]').forEach(function(x){x.removeAttribute('aria-invalid')});$('#reg-result').innerHTML='<p class="muted">Nothing submitted yet.</p>'},0)};
+  f.onsubmit=function(e){
+    e.preventDefault();
+    var g=f.querySelector('input[name=gender]:checked');
+    var v={name:$('#full-name').value.trim(),email:$('#email').value.trim(),age:$('#age').value,country:$('#country').value,
+      gender:g?g.value:'',interests:$$('input[name=interests]:checked',f).map(function(i){return i.value}),dob:$('#dob').value,bio:bio.value,terms:$('#terms').checked};
+    var er={};
+    if(v.name.length<2)er.name='Full name must be at least 2 characters';
+    var re=B()?/@/:/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!v.email)er.email='Email is required';else if(!re.test(v.email))er.email='Enter a valid email address';
+    var a=Number(v.age);
+    if(v.age==='')er.age='Age is required';else if(a>99||(!B()&&a<18))er.age='Age must be between 18 and 99';
+    if(!v.country)er.country='Select a country';
+    if(!v.gender)er.gender='Select one option';
+    if(!v.dob)er.dob='Date of birth is required';
+    if(!v.terms)er.terms='You must accept the terms';
+    ['name','email','age','country','gender','dob','terms'].forEach(function(k){
+      var el=$('#err-'+k);el.textContent=er[k]||'';
+      var input=$({name:'#full-name',email:'#email',age:'#age',country:'#country',gender:'#gender-female',dob:'#dob',terms:'#terms'}[k]);
+      if(er[k]&&k!=='gender'&&k!=='terms')input.setAttribute('aria-invalid','true');else input.removeAttribute('aria-invalid');
+    });
+    var n=Object.keys(er).length,res=$('#reg-result');
+    if(n){res.innerHTML='<p class="msg error" id="form-status" data-testid="form-status">'+n+' field'+(n>1?'s need':' needs')+' attention.</p>';return}
+    var shown=B()?v.interests.slice(0,1):v.interests;
+    res.innerHTML='<p class="msg ok" id="form-status" data-testid="form-status">Registration saved.</p><dl class="kv" style="margin-top:14px">'+
+      '<dt>Name</dt><dd id="out-name">'+esc(v.name)+'</dd><dt>Email</dt><dd id="out-email">'+esc(v.email)+'</dd><dt>Age</dt><dd id="out-age">'+esc(v.age)+'</dd>'+
+      '<dt>Country</dt><dd id="out-country">'+esc(v.country)+'</dd><dt>Gender</dt><dd id="out-gender">'+esc(v.gender)+'</dd>'+
+      '<dt>Interests</dt><dd id="out-interests">'+(shown.length?esc(shown.join(', ')):'none')+'</dd><dt>Birth date</dt><dd id="out-dob">'+esc(v.dob)+'</dd>'+
+      '<dt>Bio</dt><dd id="out-bio">'+(v.bio?esc(v.bio):'(empty)')+'</dd></dl>';
+  };
+}
+function fld(id,label,input,key){return '<label for="'+id+'">'+label+'</label>'+input+'<p class="fielderr" id="err-'+key+'" data-testid="err-'+key+'" role="alert"></p>'}
+
+/* ---------- table ---------- */
+var ROWS=(function(){
+  var fn=['Ana','Ben','Carla','Diego','Elena','Farid','Grace','Hiro','Isla','Jon','Kira','Luis','Mina','Noah','Olga','Pia','Quinn','Rafa','Sara','Tomas','Uma','Vic','Wen','Xia','Yuri','Zane','Alma','Bruno','Cleo','Dante','Eva','Finn','Gia','Hugo','Iris'];
+  var ln=['Santos','Reyes','Rossi','Martin','Lopez','Tan','Cruz','Dubois','Garcia','Bianchi'];
+  var dep=['Engineering','Sales','Support','Finance'],st=['Active','Inactive','On leave'];
+  return fn.map(function(f,i){return {id:i+1,name:f+' '+ln[i%ln.length],dept:dep[i%4],status:st[(i*7)%3],salary:900+((i*37)%86)*100}});
+})();
+var T={q:'',status:'All',key:'id',dir:1,page:1,size:10};
+function vTable(){
+  main.innerHTML='<h1>Table</h1><p class="lead">35 employees. Search by name or department, filter by status, sort any column, and change the page size.</p>'+
+  '<div class="panel"><div class="row" style="align-items:flex-end">'+
+   '<div style="flex:2 1 220px"><label for="search" style="margin-top:0">Search</label><input type="search" id="search" data-testid="search" placeholder="Name or department" value="'+esc(T.q)+'"></div>'+
+   '<div style="flex:1 1 150px"><label for="status-filter" style="margin-top:0">Status</label><select id="status-filter" data-testid="status-filter">'+['All','Active','Inactive','On leave'].map(function(s){return '<option'+(T.status===s?' selected':'')+'>'+s+'</option>'}).join('')+'</select></div>'+
+   '<div style="flex:1 1 110px"><label for="page-size" style="margin-top:0">Rows per page</label><select id="page-size" data-testid="page-size">'+[5,10,20].map(function(s){return '<option'+(T.size===s?' selected':'')+'>'+s+'</option>'}).join('')+'</select></div>'+
+  '</div></div>'+
+  '<div class="tablewrap" style="margin-top:16px"><table class="data" id="emp-table" data-testid="emp-table"><thead><tr>'+
+   [['id','ID'],['name','Name'],['dept','Department'],['status','Status'],['salary','Salary (USD)']].map(function(c){return '<th scope="col" data-key="'+c[0]+'" class="'+(c[0]==='salary'||c[0]==='id'?'num':'')+'"><button type="button" id="sort-'+c[0]+'" data-testid="sort-'+c[0]+'">'+c[1]+'</button></th>'}).join('')+
+  '</tr></thead><tbody id="emp-body"></tbody></table></div>'+
+  '<div class="pager"><span id="page-info" data-testid="page-info" aria-live="polite"></span><div class="row"><button class="btn small" id="prev-page" data-testid="prev-page" type="button">Previous</button><span id="page-num" data-testid="page-num" class="mono"></span><button class="btn small" id="next-page" data-testid="next-page" type="button">Next</button></div></div>';
+  $('#search').oninput=function(e){T.q=e.target.value;T.page=1;draw()};
+  $('#status-filter').onchange=function(e){T.status=e.target.value;T.page=1;draw()};
+  $('#page-size').onchange=function(e){T.size=Number(e.target.value);T.page=1;draw()};
+  $$('th[data-key] button').forEach(function(b){b.onclick=function(){var k=b.parentNode.dataset.key;if(T.key===k)T.dir=-T.dir;else{T.key=k;T.dir=1}draw()}});
+  $('#prev-page').onclick=function(){if(T.page>1){T.page--;draw()}};
+  $('#next-page').onclick=function(){T.page++;draw()};
+  draw();
+}
+function draw(){
+  var q=B()?T.q:T.q.toLowerCase();
+  var rows=ROWS.filter(function(r){
+    var hay=B()?(r.name+' '+r.dept):(r.name+' '+r.dept).toLowerCase();
+    return (!q||hay.indexOf(q)>-1)&&(T.status==='All'||r.status===T.status);
+  });
+  rows.sort(function(a,b){
+    var x=a[T.key],y=b[T.key];
+    if(T.key==='salary'&&B()){x=String(x);y=String(y)}
+    return (x<y?-1:x>y?1:0)*T.dir;
+  });
+  var pages=Math.max(1,Math.ceil(rows.length/T.size));
+  if(!B()&&T.page>pages)T.page=pages;
+  var start=(T.page-1)*T.size,slice=rows.slice(start,start+T.size);
+  $('#emp-body').innerHTML=slice.length?slice.map(function(r){
+    return '<tr data-testid="row-'+r.id+'"><td class="num">'+r.id+'</td><td>'+r.name+'</td><td>'+r.dept+'</td><td><span class="pill '+r.status.split(' ')[0]+'">'+r.status+'</span></td><td class="num">'+r.salary.toLocaleString('en-US')+'</td></tr>';
+  }).join(''):'<tr><td colspan="5" id="no-results" data-testid="no-results" class="muted" style="white-space:normal">No matching employees. Clear the search or choose another status.</td></tr>';
+  $$('th[data-key]').forEach(function(th){th.setAttribute('aria-sort',th.dataset.key===T.key?(T.dir>0?'ascending':'descending'):'none')});
+  $('#page-info').textContent=slice.length?('Showing '+(start+1)+' to '+(start+slice.length)+' of '+rows.length):('Showing 0 of '+rows.length);
+  $('#page-num').textContent='Page '+T.page+' of '+pages;
+  $('#prev-page').disabled=T.page<=1;
+  $('#next-page').disabled=B()?false:T.page>=pages;
+}
+
+/* ---------- dynamic ---------- */
+function vDynamic(){
+  var items=['Draft report','Old invoice','Test record'];
+  var pending=null;
+  main.innerHTML='<h1>Dynamic behavior</h1><p class="lead">Things that change after the page loads. These are the usual cause of flaky automated tests, so practice waiting for them properly.</p>'+
+  '<div class="grid2">'+
+   '<section class="panel"><h2>1. Loading spinner</h2><p class="hint">Result appears after about 2 seconds.</p><div class="row"><button class="btn primary" id="load-btn" data-testid="load-btn" type="button">Load report</button><span class="spinner" id="spinner" data-testid="spinner" role="progressbar" aria-label="Loading" hidden></span></div><p id="report-result" data-testid="report-result" style="margin-top:10px" hidden>Report ready: 42 records loaded.</p></section>'+
+   '<section class="panel"><h2>2. Delayed element</h2><p class="hint">A new button is added to the page 3 seconds after you start.</p><div class="row" id="delay-row"><button class="btn" id="start-timer" data-testid="start-timer" type="button">Start timer</button></div></section>'+
+   '<section class="panel"><h2>3. Confirmation dialog</h2><p class="hint">A built-in page dialog, because browser alert pop-ups are blocked on this host.</p><ul class="items" id="item-list" data-testid="item-list"></ul></section>'+
+   '<section class="panel"><h2>4. Toast message</h2><p class="hint">Disappears by itself after 3 seconds.</p><button class="btn" id="toast-btn" data-testid="toast-btn" type="button">Show toast</button></section>'+
+   '<section class="panel"><h2>5. Drag and drop</h2><div id="chips"><span class="chip" draggable="true" id="chip-frame" data-name="Frame">Frame</span><span class="chip" draggable="true" id="chip-lens" data-name="Lens">Lens</span><span class="chip" draggable="true" id="chip-case" data-name="Case">Case</span></div><div class="dropzone" id="drop-zone" data-testid="drop-zone" aria-label="Drop zone"></div><p class="hint" id="drop-status" data-testid="drop-status" style="margin:8px 0 0">Nothing dropped yet.</p></section>'+
+   '<section class="panel"><h2>6. File upload</h2><label for="file-input" style="margin-top:0">Choose a file</label><input type="file" id="file-input" data-testid="file-input"><p class="hint" id="file-info" data-testid="file-info" style="margin:8px 0 0">No file chosen.</p></section>'+
+   '<section class="panel"><h2>7. Hover menu</h2><div class="hovermenu"><button class="btn" id="hover-btn" data-testid="hover-btn" type="button">Hover over me</button><ul id="hover-list" data-testid="hover-list"><li><a href="#dynamic" id="hover-profile">Profile</a></li><li><a href="#dynamic" id="hover-help">Help</a></li></ul></div><p class="hint" id="hover-status" style="margin:8px 0 0">Menu items show on hover or keyboard focus.</p></section>'+
+   '<section class="panel"><h2>8. Changing ID</h2><p class="hint">This button gets a new ID on every page load, and has no test ID. Find it by its text or class.</p><button class="btn dyn-btn" id="btn-'+Math.random().toString(36).slice(2,8)+'" type="button">Button with changing ID</button><p id="dyn-status" class="hint" style="margin:8px 0 0"></p></section>'+
+  '</div>'+
+  '<div class="overlay" id="confirm-overlay" hidden><div class="dialog" id="confirm-dialog" data-testid="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-title"><h2 id="dlg-title">Delete item?</h2><p id="dlg-text" class="muted"></p><div class="row" style="justify-content:flex-end"><button class="btn" id="dlg-cancel" data-testid="dlg-cancel" type="button">Cancel</button><button class="btn danger" id="dlg-confirm" data-testid="dlg-confirm" type="button">Delete</button></div></div></div>';
+
+  $('#load-btn').onclick=function(){
+    var b=$('#load-btn');b.disabled=true;$('#report-result').hidden=true;$('#spinner').hidden=false;
+    setTimeout(function(){$('#spinner').hidden=true;$('#report-result').hidden=false;b.disabled=false},2000);
+  };
+  $('#start-timer').onclick=function(){
+    var b=$('#start-timer');b.disabled=true;b.textContent='Waiting...';
+    setTimeout(function(){
+      var n=document.createElement('button');n.className='btn primary';n.id='delayed-btn';n.setAttribute('data-testid','delayed-btn');n.type='button';n.textContent='I am here now';
+      n.onclick=function(){toast('Delayed button clicked')};
+      $('#delay-row').appendChild(n);b.textContent='Start timer';b.disabled=false;
+    },3000);
+  };
+  function list(){
+    $('#item-list').innerHTML=items.length?items.map(function(t,i){return '<li data-testid="item-'+i+'"><span>'+t+'</span><button class="btn small danger" data-item="'+t+'" id="del-'+t.toLowerCase().replace(/\s+/g,'-')+'" type="button">Delete</button></li>'}).join(''):'<li id="list-empty" data-testid="list-empty" class="muted">All items deleted. Press Reset data to start over.</li>';
+    $$('#item-list button').forEach(function(b){b.onclick=function(){pending=b.dataset.item;$('#dlg-text').textContent='"'+pending+'" will be removed from the list.';$('#confirm-overlay').hidden=false;$('#dlg-cancel').focus()}});
+  }
+  function closeDlg(){$('#confirm-overlay').hidden=true}
+  function removePending(){items=items.filter(function(x){return x!==pending});list()}
+  $('#dlg-confirm').onclick=function(){removePending();closeDlg();toast('Item deleted')};
+  $('#dlg-cancel').onclick=function(){if(B())removePending();closeDlg()};
+  $('#confirm-overlay').onkeydown=function(e){if(e.key==='Escape')closeDlg()};
+  list();
+  $('#toast-btn').onclick=function(){toast('Hello from the toast message')};
+
+  var drag=null;
+  $$('.chip').forEach(function(c){c.ondragstart=function(e){drag=c;try{e.dataTransfer.setData('text/plain',c.dataset.name)}catch(x){}}});
+  var z=$('#drop-zone');
+  z.ondragover=function(e){e.preventDefault();z.classList.add('over')};
+  z.ondragleave=function(){z.classList.remove('over')};
+  z.ondrop=function(e){e.preventDefault();z.classList.remove('over');if(drag){z.appendChild(drag);$('#drop-status').textContent='Dropped: '+drag.dataset.name;drag=null}};
+
+  $('#file-input').onchange=function(e){
+    var f=e.target.files[0],info=$('#file-info');
+    if(!f){info.textContent='No file chosen.';return}
+    var kb=(f.size/1024).toFixed(1);
+    info.textContent='Selected: '+f.name+' ('+kb+(B()?' MB':' KB')+')';
+  };
+  $$('.hovermenu a').forEach(function(a){a.onclick=function(e){e.preventDefault();$('#hover-status').textContent='You chose: '+a.textContent}});
+  $('.dyn-btn').onclick=function(){$('#dyn-status').textContent='Clicked at '+new Date().toLocaleTimeString()};
+}
+
+/* ---------- shop ---------- */
+function vShop(){
+  main.innerHTML='<h1>Shop</h1><p class="lead">Add products to the cart, then open the cart to change quantities, apply a coupon and check out.</p><div class="grid" id="products">'+
+   PRODUCTS.map(function(p){return '<article class="card" data-testid="product-'+p.id+'"><div class="tile">'+p.tag+'</div><h3 style="color:var(--fg)">'+p.name+'</h3><span class="price" id="price-'+p.id+'">'+money(p.price)+'</span><button class="btn primary" id="add-'+p.id+'" data-testid="add-'+p.id+'" type="button">Add to cart</button></article>'}).join('')+'</div>';
+  PRODUCTS.forEach(function(p){$('#add-'+p.id).onclick=function(){S.cart[p.id]=(S.cart[p.id]||0)+1;save();chrome();toast(p.name+' added to cart')}});
+}
+function totals(){
+  var sub=0;Object.keys(S.cart).forEach(function(id){var p=PRODUCTS.filter(function(x){return x.id===id})[0];if(p)sub+=p.price*S.cart[id]});
+  var disc=Math.min(sub,sub*0.1*S.coupons);
+  var ship=sub===0?0:(B()?(sub>100?0:8):(sub>=100?0:8));
+  var tax=(sub-disc)*0.08;
+  return {sub:sub,disc:disc,ship:ship,tax:tax,total:sub-disc+ship+tax};
+}
+function summaryHtml(t){
+  return '<dl class="sum"><dt>Subtotal</dt><dd id="sum-sub" data-testid="sum-sub">'+money(t.sub)+'</dd>'+
+  '<dt>Discount</dt><dd id="sum-disc" data-testid="sum-disc">-'+money(t.disc)+'</dd>'+
+  '<dt>Shipping (free from $100)</dt><dd id="sum-ship" data-testid="sum-ship">'+money(t.ship)+'</dd>'+
+  '<dt>Tax (8%)</dt><dd id="sum-tax" data-testid="sum-tax">'+money(t.tax)+'</dd>'+
+  '<dt class="total">Total</dt><dd class="total" id="sum-total" data-testid="sum-total">'+money(t.total)+'</dd></dl>';
+}
+function vCart(){
+  var ids=Object.keys(S.cart);
+  if(!ids.length){
+    main.innerHTML='<h1>Cart</h1><section class="panel"><p id="cart-empty" data-testid="cart-empty">Your cart is empty.</p><a class="btn primary" href="#shop" id="go-shop" style="text-decoration:none;display:inline-block">Browse products</a></section>'+
+      (B()?'<p class="hint" style="margin-top:12px"><a href="#checkout">Checkout</a></p>':'');
+    return;
+  }
+  main.innerHTML='<h1>Cart</h1><div class="split"><section><div class="tablewrap"><table class="data" id="cart-table" data-testid="cart-table"><thead><tr><th scope="col">Product</th><th scope="col" class="num">Price</th><th scope="col">Qty</th><th scope="col" class="num">Line total</th><th scope="col"><span style="position:absolute;left:-9999px">Remove</span></th></tr></thead><tbody>'+
+   ids.map(function(id){var p=PRODUCTS.filter(function(x){return x.id===id})[0];
+     return '<tr data-testid="cart-row-'+id+'"><td>'+p.name+'</td><td class="num">'+money(p.price)+'</td><td><input type="number" min="1" class="qty" id="qty-'+id+'" data-testid="qty-'+id+'" aria-label="Quantity for '+p.name+'" value="'+S.cart[id]+'"></td><td class="num" id="line-'+id+'">'+money(p.price*S.cart[id])+'</td><td><button class="btn small danger" id="remove-'+id+'" data-testid="remove-'+id+'" type="button">Remove</button></td></tr>'}).join('')+
+   '</tbody></table></div></section>'+
+   '<aside class="panel"><h2>Order summary</h2><div id="cart-summary"></div>'+
+   '<label for="coupon-code">Coupon code</label><div class="row"><input type="text" id="coupon-code" data-testid="coupon-code" style="flex:1 1 120px;width:auto" placeholder="SAVE10"><button class="btn" id="apply-coupon" data-testid="apply-coupon" type="button">Apply</button></div>'+
+   '<p class="msg" id="coupon-msg" data-testid="coupon-msg" hidden></p>'+
+   '<div class="row" style="margin-top:16px"><a class="btn primary" id="checkout-btn" data-testid="checkout-btn" href="#checkout" style="text-decoration:none">Checkout</a></div></aside></div>';
+  var paint=function(){$('#cart-summary').innerHTML=summaryHtml(totals())};
+  paint();
+  ids.forEach(function(id){
+    var p=PRODUCTS.filter(function(x){return x.id===id})[0];
+    $('#qty-'+id).onchange=function(e){
+      var n=Math.max(1,Math.floor(Number(e.target.value))||1);e.target.value=n;S.cart[id]=n;save();chrome();
+      $('#line-'+id).textContent=money(p.price*n);
+      if(!B())paint();
+    };
+    $('#remove-'+id).onclick=function(){delete S.cart[id];save();chrome();if(!Object.keys(S.cart).length)S.coupons=0;save();vCart()};
+  });
+  $('#apply-coupon').onclick=function(){
+    var code=$('#coupon-code').value.trim().toUpperCase(),m=$('#coupon-msg');m.hidden=false;
+    if(code!=='SAVE10'){m.className='msg error';m.textContent='Invalid coupon code';return}
+    if(S.coupons>=1&&!B()){m.className='msg error';m.textContent='Coupon already applied';return}
+    S.coupons++;save();m.className='msg ok';m.textContent='Coupon applied: 10% off';paint();
+  };
+}
+function vCheckout(){
+  if(!Object.keys(S.cart).length&&!B()){location.hash='#cart';return}
+  var t=totals();
+  main.innerHTML='<h1>Checkout</h1><div class="split"><section class="panel"><h2>Delivery and payment</h2><form id="co-form" novalidate>'+
+   fld('co-name','Full name','<input type="text" id="co-name" data-testid="co-name">','co-name')+
+   fld('co-address','Address','<input type="text" id="co-address" data-testid="co-address">','co-address')+
+   fld('co-card','Card number (16 digits)','<input type="text" id="co-card" data-testid="co-card" inputmode="numeric" placeholder="4111 1111 1111 1111">','co-card')+
+   fld('co-exp','Expiry (MM/YY)','<input type="text" id="co-exp" data-testid="co-exp" placeholder="09/29">','co-exp')+
+   '<div class="row" style="margin-top:16px"><button class="btn primary" id="place-order" data-testid="place-order" type="submit">Place order</button></div></form></section>'+
+   '<aside class="panel"><h2>Order summary</h2>'+summaryHtml(t)+'</aside></div>';
+  var f=$('#co-form');
+  f.onsubmit=function(e){
+    e.preventDefault();
+    var v={n:$('#co-name').value.trim(),a:$('#co-address').value.trim(),c:$('#co-card').value.replace(/\s+/g,''),x:$('#co-exp').value.trim()};
+    var er={};
+    if(!v.n)er['co-name']='Name is required';
+    if(!v.a)er['co-address']='Address is required';
+    if(!/^\d{16}$/.test(v.c))er['co-card']='Enter a 16 digit card number';
+    var mm=/^(0[1-9]|1[0-2])\/(\d{2})$/.exec(v.x);
+    if(!mm)er['co-exp']='Use the format MM/YY';
+    ['co-name','co-address','co-card','co-exp'].forEach(function(k){
+      $('#err-'+k).textContent=er[k]||'';
+      if(er[k])$('#'+k).setAttribute('aria-invalid','true');else $('#'+k).removeAttribute('aria-invalid');
+    });
+    if(Object.keys(er).length)return;
+    var no='QA-'+(++S.orders);
+    S.cart={};S.coupons=0;save();chrome();
+    main.innerHTML='<h1>Order placed</h1><section class="panel"><p class="msg ok" id="order-confirmation" data-testid="order-confirmation">Thank you, '+esc(v.n)+'. Your order '+no+' has been placed.</p>'+
+      '<dl class="kv" style="margin-top:14px"><dt>Order number</dt><dd id="order-number" data-testid="order-number">'+no+'</dd><dt>Amount charged</dt><dd id="order-total" data-testid="order-total">'+money(t.total)+'</dd><dt>Ship to</dt><dd>'+esc(v.a)+'</dd></dl>'+
+      '<p style="margin-top:16px"><a class="btn" href="#shop" style="text-decoration:none;display:inline-block">Continue shopping</a></p></section>';
+  };
+}
+
+/* ---------- trainer notes ---------- */
+var unlocked=false;
+function vTrainer(){
+  if(!unlocked){
+    main.innerHTML='<h1>Trainer notes</h1><p class="lead">The list of hidden bugs. Enter the trainer passcode to continue. This only keeps trainees from opening it by accident; it is not real security.</p>'+
+     '<section class="panel" style="max-width:420px"><form id="tr-form"><label for="trainer-pass" style="margin-top:0">Passcode</label><input type="password" id="trainer-pass" data-testid="trainer-pass" autocomplete="off"><p class="msg error" id="tr-err" role="alert" hidden>Wrong passcode.</p><div class="row" style="margin-top:14px"><button class="btn primary" type="submit" id="trainer-submit">Open</button></div></form><p class="hint" style="margin-top:12px">Passcode: <code>trainer123</code></p></section>';
+    $('#tr-form').onsubmit=function(e){e.preventDefault();if($('#trainer-pass').value==='trainer123'){unlocked=true;vTrainer()}else $('#tr-err').hidden=false};
+    return;
+  }
+  main.innerHTML='<h1>Trainer notes</h1><p class="lead">'+BUGS.length+' planted bugs. They only appear while <b>Bug mode</b> is on (currently <b>'+(S.bug?'on':'off')+'</b>). Each one has a correct behavior you can use as the expected result in a test case.</p>'+
+   '<div class="bugs">'+BUGS.map(function(b){return '<article class="bug" data-testid="bug-'+b.id+'"><header><span class="id">'+b.id+'</span><strong>'+b.title+'</strong><span class="where">#'+b.page+'</span></header><dl><dt>Steps</dt><dd>'+b.steps+'</dd><dt>Expected</dt><dd>'+b.exp+'</dd><dt>With bug</dt><dd>'+b.act+'</dd></dl></article>'}).join('')+'</div>'+
+   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> the date picker opens over the Password, Confirm password and Mobile number fields. It stays open when you click elsewhere, so a script that tries to type into Password fails with an element click intercepted error. Trainees must pick a date, press Close, or press Escape first. This teaches them to deal with pop-ups that cover other elements.</p></section><section class="panel" style="margin-top:20px"><h2>Exercise ideas</h2><p>Manual: write test cases for one page, swap with a partner, run them with Bug mode on, and log each defect.</p><p>Automation: write the same flows as scripts with Bug mode off. Then turn it on and see which scripts fail and why.</p><p style="margin:0">Waiting: automate the Dynamic page without fixed sleeps. Use waits for the spinner, the delayed button and the dialog.</p></section>';
+}
+
+chrome();
+route();
+})();
+</script>
+
+</body>
+</html>
