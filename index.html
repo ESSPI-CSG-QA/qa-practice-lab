@@ -157,7 +157,7 @@ table.data td.num,table.data th.num{text-align:right;font-variant-numeric:tabula
 .dprow input{flex:1 1 auto;min-width:0;width:auto}
 .dprow .btn{flex:0 0 auto}
 input[readonly]{cursor:pointer}
-.calendar{position:absolute;left:0;top:calc(100% + 4px);z-index:15;width:min(100%,320px);background:var(--surface);border:1px solid var(--muted);border-radius:8px;padding:12px;box-shadow:0 8px 24px rgb(0 0 0 / .25)}
+.calendar{position:absolute;left:0;top:calc(100% + 4px);z-index:15;width:100%;max-width:480px;background:var(--surface);border:1px solid var(--muted);border-radius:8px;padding:12px;box-shadow:0 8px 24px rgb(0 0 0 / .25)}
 .calendar[hidden]{display:none}
 .cal-head{display:flex;gap:6px;align-items:center;margin-bottom:8px}
 .cal-head select{flex:1 1 0;min-width:0;padding:5px 6px}
@@ -181,8 +181,8 @@ footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:v
 @media (max-width:760px){.split{grid-template-columns:minmax(0,1fr)} .bug dl{grid-template-columns:1fr}}
 </style>
 
-<div class="top"><div class="top-in">
-  <a class="brand" href="#home" data-testid="brand"><i></i>QA Practice Lab</a>
+<header class="top"><div class="top-in">
+  <a class="brand" href="#home" data-testid="brand" aria-label="QA Practice Lab, home"><i></i>QA Practice Lab</a>
   <nav aria-label="Main">
     <a href="#login" data-testid="nav-login">Login</a>
     <a href="#register" data-testid="nav-register">Register</a>
@@ -190,14 +190,14 @@ footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:v
     <a href="#table" data-testid="nav-table">Table</a>
     <a href="#dynamic" data-testid="nav-dynamic">Dynamic</a>
     <a href="#shop" data-testid="nav-shop">Shop</a>
-    <a href="#cart" data-testid="nav-cart" id="nav-cart">Cart<span class="badge" id="cart-count" data-testid="cart-count">0</span></a>
+    <a href="#cart" data-testid="nav-cart" id="nav-cart" aria-label="Cart, 0 items">Cart<span class="badge" id="cart-count" data-testid="cart-count" aria-hidden="true">0</span></a>
   </nav>
   <div class="tools">
-    <span class="userchip" id="user-chip" data-testid="user-chip" hidden></span>
-    <label class="switch" for="bug-mode" style="margin:0"><input type="checkbox" id="bug-mode" data-testid="bug-mode"><span class="track"></span>Bug mode</label>
-    <button class="btn small" id="reset-data" data-testid="reset-data" type="button">Reset data</button>
+    <span class="userchip" id="user-chip" data-testid="user-chip" role="status" hidden></span>
+    <label class="switch" for="bug-mode" style="margin:0"><input type="checkbox" id="bug-mode" data-testid="bug-mode" role="switch" aria-label="Bug mode"><span class="track"></span>Bug mode</label>
+    <button class="btn small" id="reset-data" data-testid="reset-data" type="button" aria-label="Reset data">Reset data</button>
   </div>
-</div></div>
+</div></header>
 
 <div class="wrap">
   <main id="main" tabindex="-1"></main>
@@ -270,6 +270,7 @@ function route(){
 function chrome(){
   var n=Object.keys(S.cart).reduce(function(a,k){return a+S.cart[k]},0);
   $('#cart-count').textContent=n;
+  $('#nav-cart').setAttribute('aria-label','Cart, '+n+(n===1?' item':' items'));
   var c=$('#user-chip');c.hidden=!S.user;c.textContent=S.user?('signed in: '+S.user):'';
   $('#bug-mode').checked=S.bug;
 }
@@ -346,9 +347,9 @@ function vRegister(){
   var now=new Date(),cal={y:2000,m:0},chosen='';
   main.innerHTML='<h1>Create an account</h1><p class="lead">A typical online shop sign-up. Fill in every required field, including the date of birth, then create the account. You can log in with it afterwards.</p>'+
   '<div class="split"><section class="panel" id="register-panel"><h2>Your details</h2><form id="register-form" novalidate>'+
+   '<label for="birthdate">Date of birth</label><div class="dpwrap"><div class="dprow"><input type="text" id="birthdate" data-testid="birthdate" placeholder="YYYY-MM-DD" readonly autocomplete="off"><button type="button" class="btn" id="open-calendar" data-testid="open-calendar" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar">Pick a date</button></div><div class="calendar" id="calendar" data-testid="calendar" role="dialog" aria-label="Choose your date of birth" hidden></div></div><p class="fielderr" id="err-birthdate" data-testid="err-birthdate" role="alert"></p>'+
    '<div class="two"><div>'+fld('first-name','First name','<input type="text" id="first-name" data-testid="first-name" autocomplete="off">','first-name')+'</div><div>'+fld('last-name','Last name','<input type="text" id="last-name" data-testid="last-name" autocomplete="off">','last-name')+'</div></div>'+
    fld('reg-email','Email address','<input type="email" id="reg-email" data-testid="reg-email" autocomplete="off">','reg-email')+
-   '<label for="birthdate">Date of birth</label><div class="dpwrap"><div class="dprow"><input type="text" id="birthdate" data-testid="birthdate" placeholder="YYYY-MM-DD" readonly autocomplete="off"><button type="button" class="btn" id="open-calendar" data-testid="open-calendar" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar">Pick a date</button></div><div class="calendar" id="calendar" data-testid="calendar" role="dialog" aria-label="Choose your date of birth" hidden></div></div><p class="fielderr" id="err-birthdate" data-testid="err-birthdate" role="alert"></p>'+
    '<label for="reg-password">Password</label><div class="dprow"><input type="password" id="reg-password" data-testid="reg-password" autocomplete="new-password"><button type="button" class="btn" id="toggle-password" data-testid="toggle-password" aria-pressed="false">Show</button></div><p class="hint" id="password-strength" data-testid="password-strength" style="margin:4px 0 0">At least 8 characters, one capital letter and one number.</p><p class="fielderr" id="err-reg-password" data-testid="err-reg-password" role="alert"></p>'+
    fld('reg-confirm','Confirm password','<input type="password" id="reg-confirm" data-testid="reg-confirm" autocomplete="new-password">','reg-confirm')+
    fld('reg-phone','Mobile number','<input type="text" id="reg-phone" data-testid="reg-phone" inputmode="tel" placeholder="+63 917 123 4567">','reg-phone')+
@@ -391,7 +392,7 @@ function vRegister(){
     if(d&&!d.disabled){
       chosen=d.dataset.date;var v=chosen;
       if(B()){var p=v.split('-').map(Number),q=new Date(p[0],p[1]-1,p[2]-1);v=fmt(q.getFullYear(),q.getMonth(),q.getDate())}
-      inp.value=v;$('#err-birthdate').textContent='';inp.removeAttribute('aria-invalid');closeCal();
+      inp.value=v;$('#err-birthdate').textContent='';inp.removeAttribute('aria-invalid');paint();var sd=$('.cal-day.sel');if(sd)sd.focus();
     }
   };
   cEl.onchange=function(e){
@@ -399,6 +400,7 @@ function vRegister(){
     else if(e.target.id==='cal-year'){cal.y=+e.target.value;paint();$('#cal-year').focus()}
   };
   cEl.onkeydown=function(e){if(e.key==='Escape'){e.preventDefault();closeCal()}};
+  main.onkeydown=function(e){if(e.key==='Escape'&&cEl.isConnected&&!cEl.hidden){closeCal()}};
 
   $('#toggle-password').onclick=function(){var p=$('#reg-password'),show=p.type==='password';p.type=show?'text':'password';this.textContent=show?'Hide':'Show';this.setAttribute('aria-pressed',String(show))};
   $('#reg-password').oninput=function(e){
@@ -494,7 +496,7 @@ function vForms(){
       '<dt>Bio</dt><dd id="out-bio">'+(v.bio?esc(v.bio):'(empty)')+'</dd></dl>';
   };
 }
-function fld(id,label,input,key){return '<label for="'+id+'">'+label+'</label>'+input+'<p class="fielderr" id="err-'+key+'" data-testid="err-'+key+'" role="alert"></p>'}
+function fld(id,label,input,key){input=input.replace(/^<(input|select|textarea)/,'<$1 aria-required="true" aria-describedby="err-'+key+'"');return '<label for="'+id+'">'+label+'</label>'+input+'<p class="fielderr" id="err-'+key+'" data-testid="err-'+key+'" role="alert"></p>'}
 
 /* ---------- table ---------- */
 var ROWS=(function(){
@@ -577,7 +579,7 @@ function vDynamic(){
     },3000);
   };
   function list(){
-    $('#item-list').innerHTML=items.length?items.map(function(t,i){return '<li data-testid="item-'+i+'"><span>'+t+'</span><button class="btn small danger" data-item="'+t+'" id="del-'+t.toLowerCase().replace(/\s+/g,'-')+'" type="button">Delete</button></li>'}).join(''):'<li id="list-empty" data-testid="list-empty" class="muted">All items deleted. Press Reset data to start over.</li>';
+    $('#item-list').innerHTML=items.length?items.map(function(t,i){return '<li data-testid="item-'+i+'"><span>'+t+'</span><button class="btn small danger" data-item="'+t+'" aria-label="Delete '+t+'" id="del-'+t.toLowerCase().replace(/\s+/g,'-')+'" type="button">Delete</button></li>'}).join(''):'<li id="list-empty" data-testid="list-empty" class="muted">All items deleted. Press Reset data to start over.</li>';
     $$('#item-list button').forEach(function(b){b.onclick=function(){pending=b.dataset.item;$('#dlg-text').textContent='"'+pending+'" will be removed from the list.';$('#confirm-overlay').hidden=false;$('#dlg-cancel').focus()}});
   }
   function closeDlg(){$('#confirm-overlay').hidden=true}
@@ -702,11 +704,45 @@ function vTrainer(){
   }
   main.innerHTML='<h1>Trainer notes</h1><p class="lead">'+BUGS.length+' planted bugs. They only appear while <b>Bug mode</b> is on (currently <b>'+(S.bug?'on':'off')+'</b>). Each one has a correct behavior you can use as the expected result in a test case.</p>'+
    '<div class="bugs">'+BUGS.map(function(b){return '<article class="bug" data-testid="bug-'+b.id+'"><header><span class="id">'+b.id+'</span><strong>'+b.title+'</strong><span class="where">#'+b.page+'</span></header><dl><dt>Steps</dt><dd>'+b.steps+'</dd><dt>Expected</dt><dd>'+b.exp+'</dd><dt>With bug</dt><dd>'+b.act+'</dd></dl></article>'}).join('')+'</div>'+
-   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> the date picker opens over the Password, Confirm password and Mobile number fields. It stays open when you click elsewhere, so a script that tries to type into Password fails with an element click intercepted error. Trainees must pick a date, press Close, or press Escape first. This teaches them to deal with pop-ups that cover other elements.</p></section><section class="panel" style="margin-top:20px"><h2>Exercise ideas</h2><p>Manual: write test cases for one page, swap with a partner, run them with Bug mode on, and log each defect.</p><p>Automation: write the same flows as scripts with Bug mode off. Then turn it on and see which scripts fail and why.</p><p style="margin:0">Waiting: automate the Dynamic page without fixed sleeps. Use waits for the spinner, the delayed button and the dialog.</p></section>';
+   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> Date of birth is the first field. The calendar stays open after a date is picked and covers First name, Last name, Email and part of Password, so a script that clicks the next field fails with an element click intercepted error. Workarounds trainees should find: press Close, press Escape, press the Pick a date button again, or fill the field without clicking it (for example Playwright fill; Selenium sendKeys behaves similarly). This teaches them to deal with pop-ups that cover the next element.</p></section><section class="panel" style="margin-top:20px"><h2>Exercise ideas</h2><p>Manual: write test cases for one page, swap with a partner, run them with Bug mode on, and log each defect.</p><p>Automation: write the same flows as scripts with Bug mode off. Then turn it on and see which scripts fail and why.</p><p style="margin:0">Waiting: automate the Dynamic page without fixed sleeps. Use waits for the spinner, the delayed button and the dialog.</p></section>';
 }
+
+/* ---------- accessibility names and roles, re-applied after every page change ---------- */
+document.documentElement.lang='en';
+var secN=0;
+function a11y(){
+  $$('section,aside',main).forEach(function(s){
+    var h=s.querySelector('h1,h2,h3');
+    if(h&&!s.hasAttribute('aria-label')&&!s.hasAttribute('aria-labelledby')){if(!h.id)h.id='sec-h'+(++secN);s.setAttribute('aria-labelledby',h.id)}
+  });
+  $$('form',main).forEach(function(f){
+    if(!f.hasAttribute('aria-label')){var s=f.closest('section'),h=s&&s.querySelector('h2');f.setAttribute('aria-label',h?h.textContent:'Form')}
+  });
+  var tl={'emp-table':'Employees','cart-table':'Cart items'};
+  Object.keys(tl).forEach(function(k){var tb=$('#'+k);if(tb)tb.setAttribute('aria-label',tl[k])});
+  $$('th[data-key] button',main).forEach(function(b){b.setAttribute('aria-label','Sort by '+b.textContent)});
+  var pg=$('.pager',main);if(pg){pg.setAttribute('role','navigation');pg.setAttribute('aria-label','Pagination')}
+  var pv=$('#prev-page'),nx=$('#next-page');if(pv){pv.setAttribute('aria-label','Previous page');nx.setAttribute('aria-label','Next page')}
+  $$('#products article.card',main).forEach(function(a){
+    var nm=a.querySelector('h3').textContent;a.setAttribute('aria-label',nm);
+    var b=a.querySelector('button');if(b)b.setAttribute('aria-label','Add '+nm+' to cart');
+  });
+  $$('#cart-table tbody tr',main).forEach(function(r){var b=r.querySelector('button');if(b)b.setAttribute('aria-label','Remove '+r.cells[0].textContent)});
+  $$('.chip',main).forEach(function(c){c.setAttribute('role','button');c.setAttribute('tabindex','0');c.setAttribute('aria-label','Drag '+c.dataset.name)});
+  var dz=$('#drop-zone',main);if(dz)dz.setAttribute('role','region');
+  var hb=$('#hover-btn',main);
+  if(hb){hb.setAttribute('aria-haspopup','menu');$('#hover-list').setAttribute('role','menu');$$('#hover-list li').forEach(function(li){li.setAttribute('role','none')});$$('#hover-list a').forEach(function(a){a.setAttribute('role','menuitem')})}
+  ['terms','reg-terms'].forEach(function(id){var e=$('#'+id,main);if(e)e.setAttribute('aria-required','true')});
+  $$('.fielderr[id^="err-"]',main).forEach(function(p){
+    var c=$('#'+p.id.slice(4),main)||p.closest('fieldset');
+    if(c&&!c.hasAttribute('aria-describedby'))c.setAttribute('aria-describedby',p.id);
+  });
+}
+new MutationObserver(a11y).observe(main,{childList:true,subtree:true});
 
 chrome();
 route();
+a11y();
 })();
 </script>
 
