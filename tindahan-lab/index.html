@@ -623,7 +623,7 @@ function vRegister(){
       var ds=fmt(cal.y,cal.m,d),future=new Date(cal.y,cal.m,d)>now;
       h+='<button type="button" class="cal-day'+(ds===chosen?' sel':'')+'" data-date="'+ds+'" data-testid="day-'+d+'" aria-label="'+d+' '+M[cal.m]+' '+cal.y+'"'+(future?' disabled':'')+(ds===chosen?' aria-pressed="true"':'')+'>'+d+'</button>';
     }
-    h+='</div><div class="cal-foot"><button type="button" class="btn small" id="cal-close" data-testid="cal-close">'+t('btn.close')+'</button></div>';
+    h+='</div>';
     cEl.innerHTML=h;
   }
   function openCal(){if(inp.value){var p=inp.value.split('-');cal.y=+p[0];cal.m=+p[1]-1}paint();cEl.hidden=false;btn.setAttribute('aria-expanded','true');$('#cal-month').focus()}
@@ -634,7 +634,6 @@ function vRegister(){
     var tg=e.target;
     if(tg.closest('#cal-prev')){cal.m--;if(cal.m<0){cal.m=11;cal.y--}if(cal.y<1920){cal.y=1920;cal.m=0}paint();$('#cal-prev').focus();return}
     if(tg.closest('#cal-next')){cal.m++;if(cal.m>11){cal.m=0;cal.y++}if(cal.y>now.getFullYear()){cal.y=now.getFullYear();cal.m=now.getMonth()}paint();$('#cal-next').focus();return}
-    if(tg.closest('#cal-close')){closeCal();return}
     var d=tg.closest('.cal-day');
     if(d&&!d.disabled){
       chosen=d.dataset.date;var v=chosen;
@@ -935,7 +934,7 @@ function vTrainer(){
   }
   main.innerHTML='<h1>Trainer notes</h1><p class="lead">'+BUGS.length+' planted bugs. They only appear while <b>Bug mode</b> is on (currently <b>'+(S.bug?'on':'off')+'</b>). The notes themselves are in English. Steps use the English screen text; in Filipino mode use the matching translated text.</p>'+
    '<div class="bugs">'+BUGS.map(function(b){return '<article class="bug" data-testid="bug-'+b.id+'" aria-label="'+b.id+' '+b.title+'"><header><span class="id">'+b.id+'</span><strong>'+b.title+'</strong><span class="where">#'+b.page+'</span></header><dl><dt>Steps</dt><dd>'+b.steps+'</dd><dt>Expected</dt><dd>'+b.exp+'</dd><dt>With bug</dt><dd>'+b.act+'</dd></dl></article>'}).join('')+'</div>'+
-   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> Date of birth is the first field. The calendar stays open after a date is picked and covers First name, Last name, Email and part of Password, so a script that clicks the next field fails with an element click intercepted error. Workarounds trainees should find: press Close, press Escape, press the Pick a date button again, or fill the field without clicking it (for example Playwright fill).</p></section>'+
+   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> Date of birth is the first field. The calendar stays open after a date is picked and covers First name, Last name, Email and part of Password, so a script that clicks the next field fails with an element click intercepted error. Workarounds trainees should find: press Escape, press the Pick a date button again, or fill the field without clicking it (for example Playwright fill).</p></section>'+
    '<section class="panel" style="margin-top:20px"><h2>Language exercise ideas</h2><p>Write one test with a role locator that uses visible text, for example the Add to cart button. Run it in English, then switch to Filipino and watch it fail. Fix it by using a test ID or by reading the text from a translation table.</p><p>Check that dates, prices and error messages change language but stay correct. Prices always use the peso sign with two decimals.</p><p style="margin:0">Translations were written for practice. Ask a Filipino speaker on your team to review the wording before using it in a formal training.</p></section>';
 }
 

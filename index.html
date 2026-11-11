@@ -373,7 +373,7 @@ function vRegister(){
       var ds=fmt(cal.y,cal.m,d),future=new Date(cal.y,cal.m,d)>now;
       h+='<button type="button" class="cal-day'+(ds===chosen?' sel':'')+'" data-date="'+ds+'" data-testid="day-'+d+'" aria-label="'+d+' '+MONTHS[cal.m]+' '+cal.y+'"'+(future?' disabled':'')+(ds===chosen?' aria-pressed="true"':'')+'>'+d+'</button>';
     }
-    h+='</div><div class="cal-foot"><button type="button" class="btn small" id="cal-close" data-testid="cal-close">Close</button></div>';
+    h+='</div>';
     cEl.innerHTML=h;
   }
   function openCal(){
@@ -387,7 +387,6 @@ function vRegister(){
     var t=e.target;
     if(t.closest('#cal-prev')){cal.m--;if(cal.m<0){cal.m=11;cal.y--}if(cal.y<1920){cal.y=1920;cal.m=0}paint();$('#cal-prev').focus();return}
     if(t.closest('#cal-next')){cal.m++;if(cal.m>11){cal.m=0;cal.y++}if(cal.y>now.getFullYear()){cal.y=now.getFullYear();cal.m=now.getMonth()}paint();$('#cal-next').focus();return}
-    if(t.closest('#cal-close')){closeCal();return}
     var d=t.closest('.cal-day');
     if(d&&!d.disabled){
       chosen=d.dataset.date;var v=chosen;
@@ -704,7 +703,7 @@ function vTrainer(){
   }
   main.innerHTML='<h1>Trainer notes</h1><p class="lead">'+BUGS.length+' planted bugs. They only appear while <b>Bug mode</b> is on (currently <b>'+(S.bug?'on':'off')+'</b>). Each one has a correct behavior you can use as the expected result in a test case.</p>'+
    '<div class="bugs">'+BUGS.map(function(b){return '<article class="bug" data-testid="bug-'+b.id+'"><header><span class="id">'+b.id+'</span><strong>'+b.title+'</strong><span class="where">#'+b.page+'</span></header><dl><dt>Steps</dt><dd>'+b.steps+'</dd><dt>Expected</dt><dd>'+b.exp+'</dd><dt>With bug</dt><dd>'+b.act+'</dd></dl></article>'}).join('')+'</div>'+
-   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> Date of birth is the first field. The calendar stays open after a date is picked and covers First name, Last name, Email and part of Password, so a script that clicks the next field fails with an element click intercepted error. Workarounds trainees should find: press Close, press Escape, press the Pick a date button again, or fill the field without clicking it (for example Playwright fill; Selenium sendKeys behaves similarly). This teaches them to deal with pop-ups that cover the next element.</p></section><section class="panel" style="margin-top:20px"><h2>Exercise ideas</h2><p>Manual: write test cases for one page, swap with a partner, run them with Bug mode on, and log each defect.</p><p>Automation: write the same flows as scripts with Bug mode off. Then turn it on and see which scripts fail and why.</p><p style="margin:0">Waiting: automate the Dynamic page without fixed sleeps. Use waits for the spinner, the delayed button and the dialog.</p></section>';
+   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> Date of birth is the first field. The calendar stays open after a date is picked and covers First name, Last name, Email and part of Password, so a script that clicks the next field fails with an element click intercepted error. Workarounds trainees should find: press Escape, press the Pick a date button again, or fill the field without clicking it (for example Playwright fill; Selenium sendKeys behaves similarly). This teaches them to deal with pop-ups that cover the next element.</p></section><section class="panel" style="margin-top:20px"><h2>Exercise ideas</h2><p>Manual: write test cases for one page, swap with a partner, run them with Bug mode on, and log each defect.</p><p>Automation: write the same flows as scripts with Bug mode off. Then turn it on and see which scripts fail and why.</p><p style="margin:0">Waiting: automate the Dynamic page without fixed sleeps. Use waits for the spinner, the delayed button and the dialog.</p></section>';
 }
 
 /* ---------- accessibility names and roles, re-applied after every page change ---------- */
