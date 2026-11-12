@@ -595,7 +595,7 @@ function vRegister(){
   var now=new Date(),cal={y:2000,m:0},chosen='';
   main.innerHTML='<h1>'+t('reg.h1')+'</h1><p class="lead">'+t('reg.lead')+'</p>'+
   '<div class="split"><section class="panel" id="register-panel"><h2>'+t('reg.details')+'</h2><form id="register-form" novalidate>'+
-   '<label for="birthdate">'+t('f.dob')+'</label><div class="dpwrap"><div class="dprow"><input type="text" id="birthdate" data-testid="birthdate" placeholder="YYYY-MM-DD" readonly autocomplete="off" aria-required="true" aria-describedby="err-birthdate"><button type="button" class="btn" id="open-calendar" data-testid="open-calendar" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar">'+t('btn.pickdate')+'</button></div>'+
+   '<label for="birthdate">'+t('f.dob')+'</label><div class="dpwrap"><div class="dprow"><input type="text" id="birthdate" data-testid="birthdate" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar" placeholder="YYYY-MM-DD" readonly autocomplete="off" aria-required="true" aria-describedby="err-birthdate"></div>'+
      '<div class="calendar" id="calendar" data-testid="calendar" role="dialog" aria-label="'+t('cal.label')+'" hidden></div></div><p class="fielderr" id="err-birthdate" data-testid="err-birthdate" role="alert"></p>'+
    '<div class="two"><div>'+fld('first-name',t('f.first'),'<input type="text" id="first-name" data-testid="first-name" autocomplete="off">','first-name')+'</div><div>'+fld('last-name',t('f.last'),'<input type="text" id="last-name" data-testid="last-name" autocomplete="off">','last-name')+'</div></div>'+
    fld('reg-email',t('f.email'),'<input type="email" id="reg-email" data-testid="reg-email" autocomplete="off">','reg-email')+
@@ -608,7 +608,7 @@ function vRegister(){
    '<div class="row" style="margin-top:16px"><button class="btn primary" id="create-account" data-testid="create-account" type="submit">'+t('btn.create')+'</button></div></form></section>'+
    '<aside class="panel"><h2>'+t('reg.good')+'</h2><p>'+t('reg.already')+' <a href="#login" id="to-login">'+t('nav.login')+'</a>.</p><p class="hint">'+t('reg.note')+'</p></aside></div>';
 
-  var cEl=$('#calendar'),inp=$('#birthdate'),btn=$('#open-calendar');
+  var cEl=$('#calendar'),inp=$('#birthdate');
   function fmt(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d)}
   function paint(){
     var first=new Date(cal.y,cal.m,1).getDay(),dim=new Date(cal.y,cal.m+1,0).getDate(),h='',M=MON[S.lang];
@@ -626,10 +626,10 @@ function vRegister(){
     h+='</div>';
     cEl.innerHTML=h;
   }
-  function openCal(){if(inp.value){var p=inp.value.split('-');cal.y=+p[0];cal.m=+p[1]-1}paint();cEl.hidden=false;btn.setAttribute('aria-expanded','true');$('#cal-month').focus()}
-  function closeCal(){cEl.hidden=true;btn.setAttribute('aria-expanded','false');btn.focus()}
-  btn.onclick=function(){if(cEl.hidden)openCal();else closeCal()};
+  function openCal(){if(inp.value){var p=inp.value.split('-');cal.y=+p[0];cal.m=+p[1]-1}paint();cEl.hidden=false;inp.setAttribute('aria-expanded','true');$('#cal-month').focus()}
+  function closeCal(){cEl.hidden=true;inp.setAttribute('aria-expanded','false');inp.focus()}
   inp.onclick=function(){if(cEl.hidden)openCal()};
+  inp.onkeydown=function(e){if((e.key==='Enter'||e.key===' '||e.key==='ArrowDown')&&cEl.hidden){e.preventDefault();openCal()}};
   cEl.onclick=function(e){
     var tg=e.target;
     if(tg.closest('#cal-prev')){cal.m--;if(cal.m<0){cal.m=11;cal.y--}if(cal.y<1920){cal.y=1920;cal.m=0}paint();$('#cal-prev').focus();return}
@@ -934,7 +934,7 @@ function vTrainer(){
   }
   main.innerHTML='<h1>Trainer notes</h1><p class="lead">'+BUGS.length+' planted bugs. They only appear while <b>Bug mode</b> is on (currently <b>'+(S.bug?'on':'off')+'</b>). The notes themselves are in English. Steps use the English screen text; in Filipino mode use the matching translated text.</p>'+
    '<div class="bugs">'+BUGS.map(function(b){return '<article class="bug" data-testid="bug-'+b.id+'" aria-label="'+b.id+' '+b.title+'"><header><span class="id">'+b.id+'</span><strong>'+b.title+'</strong><span class="where">#'+b.page+'</span></header><dl><dt>Steps</dt><dd>'+b.steps+'</dd><dt>Expected</dt><dd>'+b.exp+'</dd><dt>With bug</dt><dd>'+b.act+'</dd></dl></article>'}).join('')+'</div>'+
-   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> Date of birth is the first field. The calendar stays open after a date is picked and covers First name, Last name, Email and part of Password, so a script that clicks the next field fails with an element click intercepted error. Workarounds trainees should find: press Escape, press the Pick a date button again, or fill the field without clicking it (for example Playwright fill).</p></section>'+
+   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> Date of birth is the first field. The calendar stays open after a date is picked and covers First name, Last name, Email and part of Password, so a script that clicks the next field fails with an element click intercepted error. Workarounds trainees should find: press Escape, or fill the field without clicking it (for example Playwright fill).</p></section>'+
    '<section class="panel" style="margin-top:20px"><h2>Language exercise ideas</h2><p>Write one test with a role locator that uses visible text, for example the Add to cart button. Run it in English, then switch to Filipino and watch it fail. Fix it by using a test ID or by reading the text from a translation table.</p><p>Check that dates, prices and error messages change language but stay correct. Prices always use the peso sign with two decimals.</p><p style="margin:0">Translations were written for practice. Ask a Filipino speaker on your team to review the wording before using it in a formal training.</p></section>';
 }
 

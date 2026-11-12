@@ -347,7 +347,7 @@ function vRegister(){
   var now=new Date(),cal={y:2000,m:0},chosen='';
   main.innerHTML='<h1>Create an account</h1><p class="lead">A typical online shop sign-up. Fill in every required field, including the date of birth, then create the account. You can log in with it afterwards.</p>'+
   '<div class="split"><section class="panel" id="register-panel"><h2>Your details</h2><form id="register-form" novalidate>'+
-   '<label for="birthdate">Date of birth</label><div class="dpwrap"><div class="dprow"><input type="text" id="birthdate" data-testid="birthdate" placeholder="YYYY-MM-DD" readonly autocomplete="off"><button type="button" class="btn" id="open-calendar" data-testid="open-calendar" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar">Pick a date</button></div><div class="calendar" id="calendar" data-testid="calendar" role="dialog" aria-label="Choose your date of birth" hidden></div></div><p class="fielderr" id="err-birthdate" data-testid="err-birthdate" role="alert"></p>'+
+   '<label for="birthdate">Date of birth</label><div class="dpwrap"><div class="dprow"><input type="text" id="birthdate" data-testid="birthdate" aria-haspopup="dialog" aria-expanded="false" aria-controls="calendar" placeholder="YYYY-MM-DD" readonly autocomplete="off"></div><div class="calendar" id="calendar" data-testid="calendar" role="dialog" aria-label="Choose your date of birth" hidden></div></div><p class="fielderr" id="err-birthdate" data-testid="err-birthdate" role="alert"></p>'+
    '<div class="two"><div>'+fld('first-name','First name','<input type="text" id="first-name" data-testid="first-name" autocomplete="off">','first-name')+'</div><div>'+fld('last-name','Last name','<input type="text" id="last-name" data-testid="last-name" autocomplete="off">','last-name')+'</div></div>'+
    fld('reg-email','Email address','<input type="email" id="reg-email" data-testid="reg-email" autocomplete="off">','reg-email')+
    '<label for="reg-password">Password</label><div class="dprow"><input type="password" id="reg-password" data-testid="reg-password" autocomplete="new-password"><button type="button" class="btn" id="toggle-password" data-testid="toggle-password" aria-pressed="false">Show</button></div><p class="hint" id="password-strength" data-testid="password-strength" style="margin:4px 0 0">At least 8 characters, one capital letter and one number.</p><p class="fielderr" id="err-reg-password" data-testid="err-reg-password" role="alert"></p>'+
@@ -358,7 +358,7 @@ function vRegister(){
    '<div class="row" style="margin-top:16px"><button class="btn primary" id="create-account" data-testid="create-account" type="submit">Create account</button></div></form></section>'+
    '<aside class="panel"><h2>Good to know</h2><p>Already registered? <a href="#login" id="to-login">Log in</a>.</p><p class="hint">You must be at least 18 years old. Each email address can be used for one account only.</p></aside></div>';
 
-  var cEl=$('#calendar'),inp=$('#birthdate'),btn=$('#open-calendar');
+  var cEl=$('#calendar'),inp=$('#birthdate');
   function fmt(y,m,d){return y+'-'+pad(m+1)+'-'+pad(d)}
   function paint(){
     var first=new Date(cal.y,cal.m,1).getDay(),dim=new Date(cal.y,cal.m+1,0).getDate(),h='';
@@ -378,11 +378,11 @@ function vRegister(){
   }
   function openCal(){
     if(inp.value){var p=inp.value.split('-');cal.y=+p[0];cal.m=+p[1]-1}
-    paint();cEl.hidden=false;btn.setAttribute('aria-expanded','true');$('#cal-month').focus();
+    paint();cEl.hidden=false;inp.setAttribute('aria-expanded','true');$('#cal-month').focus();
   }
-  function closeCal(){cEl.hidden=true;btn.setAttribute('aria-expanded','false');btn.focus()}
-  btn.onclick=function(){if(cEl.hidden)openCal();else closeCal()};
+  function closeCal(){cEl.hidden=true;inp.setAttribute('aria-expanded','false');inp.focus()}
   inp.onclick=function(){if(cEl.hidden)openCal()};
+  inp.onkeydown=function(e){if((e.key==='Enter'||e.key===' '||e.key==='ArrowDown')&&cEl.hidden){e.preventDefault();openCal()}};
   cEl.onclick=function(e){
     var t=e.target;
     if(t.closest('#cal-prev')){cal.m--;if(cal.m<0){cal.m=11;cal.y--}if(cal.y<1920){cal.y=1920;cal.m=0}paint();$('#cal-prev').focus();return}
@@ -703,7 +703,7 @@ function vTrainer(){
   }
   main.innerHTML='<h1>Trainer notes</h1><p class="lead">'+BUGS.length+' planted bugs. They only appear while <b>Bug mode</b> is on (currently <b>'+(S.bug?'on':'off')+'</b>). Each one has a correct behavior you can use as the expected result in a test case.</p>'+
    '<div class="bugs">'+BUGS.map(function(b){return '<article class="bug" data-testid="bug-'+b.id+'"><header><span class="id">'+b.id+'</span><strong>'+b.title+'</strong><span class="where">#'+b.page+'</span></header><dl><dt>Steps</dt><dd>'+b.steps+'</dd><dt>Expected</dt><dd>'+b.exp+'</dd><dt>With bug</dt><dd>'+b.act+'</dd></dl></article>'}).join('')+'</div>'+
-   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> Date of birth is the first field. The calendar stays open after a date is picked and covers First name, Last name, Email and part of Password, so a script that clicks the next field fails with an element click intercepted error. Workarounds trainees should find: press Escape, press the Pick a date button again, or fill the field without clicking it (for example Playwright fill; Selenium sendKeys behaves similarly). This teaches them to deal with pop-ups that cover the next element.</p></section><section class="panel" style="margin-top:20px"><h2>Exercise ideas</h2><p>Manual: write test cases for one page, swap with a partner, run them with Bug mode on, and log each defect.</p><p>Automation: write the same flows as scripts with Bug mode off. Then turn it on and see which scripts fail and why.</p><p style="margin:0">Waiting: automate the Dynamic page without fixed sleeps. Use waits for the spinner, the delayed button and the dialog.</p></section>';
+   '<section class="panel" style="margin-top:20px"><h2>Intentional obstacle (always on)</h2><p>On <b>#register</b> Date of birth is the first field. The calendar stays open after a date is picked and covers First name, Last name, Email and part of Password, so a script that clicks the next field fails with an element click intercepted error. Workarounds trainees should find: press Escape, or fill the field without clicking it (for example Playwright fill; Selenium sendKeys behaves similarly). This teaches them to deal with pop-ups that cover the next element.</p></section><section class="panel" style="margin-top:20px"><h2>Exercise ideas</h2><p>Manual: write test cases for one page, swap with a partner, run them with Bug mode on, and log each defect.</p><p>Automation: write the same flows as scripts with Bug mode off. Then turn it on and see which scripts fail and why.</p><p style="margin:0">Waiting: automate the Dynamic page without fixed sleeps. Use waits for the spinner, the delayed button and the dialog.</p></section>';
 }
 
 /* ---------- accessibility names and roles, re-applied after every page change ---------- */
